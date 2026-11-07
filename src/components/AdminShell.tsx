@@ -4,6 +4,7 @@ import { useRouter } from '@/lib/router';
 import {
   LayoutDashboard, Radio, Flag, Wallet, LogOut, Menu, X, Shield,
 } from 'lucide-react';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
 
 const LOGO_SRC = '/images/Gemini_Generated_Image_fqkynafqkynafqky-removebg-preview.png';
 
@@ -21,7 +22,8 @@ export function AdminShell({ active, children }: { active: string; children: Rea
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-ink-950 gradient-mesh pb-20 sm:pb-0">
+    <div className="min-h-screen bg-ink-950 pb-20 sm:pb-0">
+      <AnimatedBackground />
       <header className="hidden sm:flex sticky top-0 z-30 h-16 glass border-b border-ink-800 items-center px-6 gap-4">
         <button onClick={() => navigate('/admin')} className="flex items-center gap-2.5">
           <img src={LOGO_SRC} alt="Karera Queen" className="w-9 h-9 rounded-xl object-cover" />

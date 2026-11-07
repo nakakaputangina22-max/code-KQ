@@ -13,6 +13,8 @@ import { AdminSettle } from '@/components/AdminSettle';
 import { AdminFinance } from '@/components/AdminFinance';
 import { RulesPage } from '@/components/RulesPage';
 import { ProfileSettingsPage } from '@/components/ProfileSettingsPage';
+import { PoolResults } from '@/components/PoolResults';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
 import { FullScreenSpinner } from '@/components/ui';
 import { useEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
@@ -86,6 +88,7 @@ export default function App() {
        path === '/app/bet' ? <BettingSlip preselectRaceId={route.query.race} /> :
        path === '/app/wallet' ? <WalletPage /> :
        path === '/app/bets' ? <BetHistoryPage /> :
+       path === '/app/pools' ? <PoolResults /> :
        path === '/app/settings' ? <ProfileSettingsPage /> :
        path === '/app/rules' ? <RulesPage /> :
        <UserDashboard />}
@@ -117,7 +120,8 @@ function SplashScreen() {
 
 function Landing({ onPick }: { onPick: (to: string) => void }) {
   return (
-    <div className="min-h-screen bg-ink-950 gradient-mesh flex flex-col">
+    <div className="min-h-screen bg-ink-950 flex flex-col">
+      <AnimatedBackground />
       <div className="relative isolate overflow-hidden border-b border-ink-800">
         <img src={BANNER_SRC} alt="Karera Queen horse racing" className="h-64 sm:h-80 lg:h-[27rem] w-full object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/30 to-transparent" />

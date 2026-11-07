@@ -3,6 +3,7 @@ import { useAuth } from '@/lib/auth';
 import { useToast } from '@/lib/toast';
 import { useRouter } from '@/lib/router';
 import { Spinner } from '@/components/ui';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
 import { Mail, Lock, User, Phone, Trophy, ShieldCheck, Download, Apple } from 'lucide-react';
 
 type Mode = 'login' | 'register' | 'admin';
@@ -46,7 +47,8 @@ export function AuthPage({ mode }: { mode: Mode }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-ink-950 gradient-mesh relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-ink-950 relative overflow-hidden">
+      <AnimatedBackground />
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-1/4 left-1/3 w-72 h-72 bg-brand-500/15 rounded-full blur-3xl animate-pulse-glow" />
         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-accent-500/10 rounded-full blur-3xl" style={{ animation: 'float 8s ease-in-out infinite' }} />

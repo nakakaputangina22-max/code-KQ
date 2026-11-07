@@ -1,14 +1,16 @@
 import { type ReactNode, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useRouter } from '@/lib/router';
-import { Wallet, Radio, Ticket, LogOut, Menu, X, Shield, Settings } from 'lucide-react';
+import { Wallet, Radio, Ticket, LogOut, Menu, X, Shield, Settings, Trophy } from 'lucide-react';
 import { Money } from '@/components/ui';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
 
 const LOGO_SRC = '/images/Gemini_Generated_Image_fqkynafqkynafqky-removebg-preview.png';
 
 const TABS = [
   { path: '/app', label: 'Races', icon: Radio },
   { path: '/app/bets', label: 'Tickets', icon: Ticket },
+  { path: '/app/pools', label: 'Pools', icon: Trophy },
   { path: '/app/wallet', label: 'Wallet', icon: Wallet },
   { path: '/app/settings', label: 'Settings', icon: Settings },
   { path: '/app/rules', label: 'Rules', icon: Shield },
@@ -26,7 +28,8 @@ export function UserShell({
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-ink-950 gradient-mesh pb-20 sm:pb-0">
+    <div className="min-h-screen bg-ink-950 pb-20 sm:pb-0">
+      <AnimatedBackground />
       {/* Desktop header */}
       <header className="hidden sm:flex sticky top-0 z-30 h-16 glass border-b border-ink-800 items-center px-6 gap-4">
         <button onClick={() => navigate('/app')} className="flex items-center gap-2.5 group">
@@ -102,7 +105,7 @@ export function UserShell({
       <main className="sm:max-w-5xl sm:mx-auto sm:py-6 animate-fade-in">{children}</main>
 
       {/* Mobile bottom nav */}
-      <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 glass border-t border-ink-800 grid grid-cols-5">
+      <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 glass border-t border-ink-800 grid grid-cols-6">
         {TABS.map((t) => {
           const isActive = active === t.path;
           return (
