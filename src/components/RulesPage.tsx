@@ -8,10 +8,10 @@ const CHARGE_ROWS = [
 ];
 
 const MAX_WAGERS = [
-  { code: 'FC', label: 'Forecast (FC)', max: '₱10,000', scope: 'per race' },
-  { code: 'DD', label: 'Daily Double (DD)', max: '₱20,000', scope: 'per race event' },
-  { code: 'XD', label: 'Extra Double (XD)', max: '₱20,000', scope: 'per race event' },
-  { code: 'DD1', label: 'Daily Double Plus 1 (DD+1)', max: '₱10,000', scope: 'per race event' },
+  { code: 'FC', label: 'Forecast (FC)', max: '₱15,000', scope: 'per race' },
+  { code: 'DD', label: 'Daily Double (DD)', max: '₱25,000', scope: 'per race event' },
+  { code: 'XD', label: 'Extra Double (XD)', max: '₱25,000', scope: 'per race event' },
+  { code: 'DD1', label: 'Daily Double Plus 1 (DD+1)', max: '₱15,000', scope: 'per race event' },
 ];
 
 const BET_EXPLANATIONS = [
