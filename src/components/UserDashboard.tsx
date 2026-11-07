@@ -36,13 +36,13 @@ export function UserDashboard() {
 
   return (
     <div className="px-4 sm:px-0 space-y-5 pt-4 sm:pt-6">
-      <section className="relative overflow-hidden rounded-2xl border border-brand-500/25 shadow-2xl shadow-brand-950/30">
-        <img src={BANNER_SRC} alt="Karera Queen live racing" className="h-44 sm:h-56 lg:h-64 w-full object-cover" />
+      <section className="relative overflow-hidden rounded-2xl border border-brand-500/25 shadow-2xl shadow-brand-950/30 animate-shimmer-border">
+        <img src={BANNER_SRC} alt="Karera Queen live racing" className="h-44 sm:h-56 lg:h-64 w-full object-cover transition-transform duration-700 hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink-950/85 via-ink-950/25 to-transparent" />
         <div className="absolute inset-y-0 left-0 flex flex-col justify-center p-5 sm:p-7">
-          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-brand-300">Karera Queen</p>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-display mt-1">Watch live. Bet Smart.</h1>
-          <p className="text-xs sm:text-sm text-ink-200 mt-2 max-w-xs">Four bet types, one live race card.</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-brand-300 animate-shimmer-text">Karera Queen</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-display mt-1 animate-slide-up">Watch live. Bet Smart.</h1>
+          <p className="text-xs sm:text-sm text-ink-200 mt-2 max-w-xs animate-slide-up" style={{ animationDelay: '0.1s' }}>Four bet types, one live race card.</p>
         </div>
       </section>
 
@@ -184,9 +184,9 @@ function RaceDetailCard({
         {horses.length === 0 ? (
           <EmptyState icon={Users} title="No lineup published" hint="Horses will appear once the admin sets the field." />
         ) : (
-          horses.map((h) => (
-            <div key={h.id} className="flex items-center gap-3 px-5 py-3">
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-sm shrink-0 ${
+          horses.map((h, idx) => (
+            <div key={h.id} className="flex items-center gap-3 px-5 py-3 animate-slide-in-left" style={{ animationDelay: `${idx * 50}ms` }}>
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-sm shrink-0 transition-all hover:scale-110 ${
                 h.scratched ? 'bg-ink-800 text-ink-600 line-through' : 'bg-brand-500/15 text-brand-300'
               }`}>
                 {h.horse_number}

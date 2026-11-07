@@ -4,7 +4,7 @@ import { useToast } from '@/lib/toast';
 import { Modal } from '@/components/Modal';
 import { Money, Spinner, StatusBadge, EmptyState } from '@/components/ui';
 import {
-  Wallet, ArrowDownToLine, ArrowUpFromLine, Check, X, Loader2, Search, Users, SlidersHorizontal,
+  Wallet, ArrowDownToLine, ArrowUpFromLine, Check, X, Loader2, Search, Users, SlidersHorizontal, Plus, Minus,
 } from 'lucide-react';
 
 type Tab = 'PENDING' | 'HISTORY' | 'USERS';
@@ -102,10 +102,10 @@ export function AdminFinance() {
           {pending.length === 0 ? (
             <div className="card"><EmptyState icon={Check} title="No pending requests" hint="All deposits and withdrawals have been handled." /></div>
           ) : (
-            pending.map((tx) => {
+            pending.map((tx, idx) => {
               const profile = profiles.find((p) => p.id === tx.user_id);
               return (
-                <div key={tx.id} className="card p-4">
+                <div key={tx.id} className="card p-4 animate-slide-up" style={{ animationDelay: `${idx * 60}ms` }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${tx.type === 'DEPOSIT' ? 'bg-success-500/15 text-success-600' : 'bg-accent-500/15 text-accent-500'}`}>
@@ -213,20 +213,28 @@ function UsersTab({ profiles, onAdjust }: { profiles: Profile[]; onAdjust: (p: P
 
 function AdjustModal({ profile, onClose, onDone }: { profile: Profile; onClose: () => void; onDone: () => void }) {
   const { notify } = useToast();
-  const [delta, setDelta] = useState(0);
+  const [mode, setMode] = useState<'credit' | 'debit'>('credit');
+  const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
 
+  const numericAmount = Number(amount) || 0;
+  const delta = mode === 'credit' ? numericAmount : -numericAmount;
+
   async function submit() {
-    if (delta === 0) { notify('Enter a non-zero amount', 'error'); return; }
+    if (numericAmount <= 0) { notify('Enter an amount greater than zero', 'error'); return; }
     setBusy(true);
     const { error } = await supabase.rpc('admin_adjust_balance', {
-      p_user_id: profile.id, p_delta: delta, p_note: note || `Manual adjustment of ${delta > 0 ? '+' : ''}${delta}`,
+      p_user_id: profile.id, p_delta: delta, p_note: note || `Manual ${mode} of ₱${numericAmount.toFixed(2)}`,
     });
     setBusy(false);
     if (error) { notify(error.message, 'error'); return; }
-    notify(`Balance adjusted by ${delta > 0 ? '+' : ''}₱${delta.toFixed(2)}`, 'success');
+    notify(`Balance ${mode === 'credit' ? 'credited' : 'debited'} by ₱${numericAmount.toFixed(2)}`, 'success');
     onDone(); onClose();
+  }
+
+  function setQuickAmount(v: number) {
+    setAmount(String(v));
   }
 
   return (
@@ -236,21 +244,109 @@ function AdjustModal({ profile, onClose, onDone }: { profile: Profile; onClose: 
           <span className="text-ink-400">Current Balance</span>
           <Money value={Number(profile.balance)} className="text-white font-bold" />
         </div>
+
+        {/* Credit / Debit toggle — large tappable buttons */}
         <div>
-          <label className="label">Adjustment Amount (+ to credit, − to debit)</label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-mono">₱</span>
-            <input type="number" value={delta} onChange={(e) => setDelta(Number(e.target.value) || 0)} className="input pl-8" />
+          <label className="label">Select action</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setMode('credit')}
+              className={`flex flex-col items-center justify-center gap-2 rounded-xl border py-5 transition-all duration-200 active:scale-95 ${
+                mode === 'credit'
+                  ? 'border-success-500 bg-success-500/15 ring-2 ring-success-500/30 shadow-lg shadow-success-500/20'
+                  : 'border-ink-800 bg-ink-900 hover:border-success-500/40'
+              }`}
+            >
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${mode === 'credit' ? 'bg-success-500/20' : 'bg-ink-800'}`}>
+                <Plus className={`w-7 h-7 ${mode === 'credit' ? 'text-success-400' : 'text-ink-400'}`} />
+              </div>
+              <span className={`text-sm font-bold ${mode === 'credit' ? 'text-success-400' : 'text-ink-400'}`}>Credit (+)</span>
+              <span className="text-[10px] text-ink-500">Add to wallet</span>
+            </button>
+            <button
+              onClick={() => setMode('debit')}
+              className={`flex flex-col items-center justify-center gap-2 rounded-xl border py-5 transition-all duration-200 active:scale-95 ${
+                mode === 'debit'
+                  ? 'border-accent-500 bg-accent-500/15 ring-2 ring-accent-500/30 shadow-lg shadow-accent-500/20'
+                  : 'border-ink-800 bg-ink-900 hover:border-accent-500/40'
+              }`}
+            >
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${mode === 'debit' ? 'bg-accent-500/20' : 'bg-ink-800'}`}>
+                <Minus className={`w-7 h-7 ${mode === 'debit' ? 'text-accent-400' : 'text-ink-400'}`} />
+              </div>
+              <span className={`text-sm font-bold ${mode === 'debit' ? 'text-accent-400' : 'text-ink-400'}`}>Debit (−)</span>
+              <span className="text-[10px] text-ink-500">Deduct from wallet</span>
+            </button>
           </div>
         </div>
+
+        {/* Amount entry with large +/- steppers */}
+        <div>
+          <label className="label">Amount</label>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setAmount(String(Math.max(0, numericAmount - 50)))}
+              className="btn-secondary h-14 w-14 p-0 text-2xl shrink-0 active:scale-90 transition-transform"
+              aria-label="Decrease by 50"
+            >
+              <Minus className="w-6 h-6" />
+            </button>
+            <div className="flex-1 relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500 font-mono text-lg">₱</span>
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="input pl-9 text-center text-xl font-bold font-mono h-14"
+                placeholder="0"
+                inputMode="numeric"
+              />
+            </div>
+            <button
+              onClick={() => setAmount(String(numericAmount + 50))}
+              className="btn-secondary h-14 w-14 p-0 text-2xl shrink-0 active:scale-90 transition-transform"
+              aria-label="Increase by 50"
+            >
+              <Plus className="w-6 h-6" />
+            </button>
+          </div>
+          {/* Quick amounts */}
+          <div className="grid grid-cols-4 gap-2 mt-2.5">
+            {[100, 500, 1000, 5000].map((v) => (
+              <button
+                key={v}
+                onClick={() => setQuickAmount(v)}
+                className={`btn-secondary py-2.5 text-xs font-semibold ${numericAmount === v ? 'ring-2 ring-brand-500/40' : ''}`}
+              >
+                ₱{v.toLocaleString()}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Preview of the resulting change */}
+        <div className="flex items-center justify-between bg-ink-950 border border-ink-800 rounded-xl px-4 py-3">
+          <span className="text-xs text-ink-400">Resulting change</span>
+          <span className={`text-sm font-bold font-mono ${mode === 'credit' ? 'text-success-400' : 'text-accent-400'}`}>
+            {mode === 'credit' ? '+' : '−'}₱{numericAmount.toFixed(2)}
+          </span>
+        </div>
+
         <div>
           <label className="label">Note (optional)</label>
           <input value={note} onChange={(e) => setNote(e.target.value)} className="input" placeholder="Reason for adjustment" />
         </div>
         <div className="flex gap-2">
-          <button onClick={onClose} className="btn-secondary flex-1">Cancel</button>
-          <button onClick={submit} disabled={busy} className="btn-accent flex-1">
-            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Apply
+          <button onClick={onClose} className="btn-secondary flex-1 py-3">Cancel</button>
+          <button
+            onClick={submit}
+            disabled={busy || numericAmount <= 0}
+            className={`flex-1 py-3 ${mode === 'credit' ? 'btn-primary' : 'btn-accent'}`}
+          >
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            {mode === 'credit' ? 'Credit Wallet' : 'Debit Wallet'}
           </button>
         </div>
       </div>

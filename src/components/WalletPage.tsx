@@ -49,12 +49,12 @@ export function WalletPage() {
       </section>
 
       {/* Balance card */}
-      <section className="card overflow-hidden">
-        <div className="p-5 bg-gradient-to-br from-brand-600/20 via-ink-900 to-ink-900">
+      <section className="card overflow-hidden animate-glow-pulse">
+        <div className="p-5 bg-gradient-to-br from-brand-600/20 via-ink-900 to-ink-900 animate-gradient-shift">
           <div className="flex items-center gap-2 text-ink-400 text-xs uppercase tracking-wide font-semibold">
             <Wallet className="w-3.5 h-3.5" /> Main Wallet
           </div>
-          <Money value={profile?.balance ?? 0} className="text-4xl font-extrabold text-white mt-1.5 block" />
+          <Money value={profile?.balance ?? 0} className="text-4xl font-extrabold text-white mt-1.5 block animate-count-up" />
           <p className="text-xs text-ink-500 mt-1">Available for betting</p>
         </div>
         <div className="grid grid-cols-2 divide-x divide-ink-800 border-t border-ink-800">
@@ -69,9 +69,15 @@ export function WalletPage() {
 
       {/* Quick stats */}
       <section className="grid grid-cols-3 gap-3">
-        <Stat icon={ArrowDownToLine} label="Deposits" value={sumTxs(txs, 'DEPOSIT', ['APPROVED'])} tone="success" />
-        <Stat icon={ArrowUpFromLine} label="Withdrawn" value={sumTxs(txs, 'WITHDRAWAL', ['APPROVED'])} tone="accent" />
-        <Stat icon={TrendingUp} label="Winnings" value={sumTxs(txs, 'WIN', ['APPROVED'])} tone="brand" />
+        <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
+          <Stat icon={ArrowDownToLine} label="Deposits" value={sumTxs(txs, 'DEPOSIT', ['APPROVED'])} tone="success" />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '80ms' }}>
+          <Stat icon={ArrowUpFromLine} label="Withdrawn" value={sumTxs(txs, 'WITHDRAWAL', ['APPROVED'])} tone="accent" />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '160ms' }}>
+          <Stat icon={TrendingUp} label="Winnings" value={sumTxs(txs, 'WIN', ['APPROVED'])} tone="brand" />
+        </div>
       </section>
 
       {/* Transactions */}
@@ -193,15 +199,21 @@ function DepositModal({ open, onClose, onDone }: { open: boolean; onClose: () =>
   return (
     <Modal open={open} onClose={onClose} title="Cash In">
       <div className="space-y-4">
-        <div className="rounded-2xl border border-brand-500/20 bg-brand-500/5 p-4">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <div>
-              <p className="text-sm font-bold text-white">Scan to pay</p>
-              <p className="text-xs text-ink-400 mt-0.5">Use the QR code, then upload your receipt below. </p>
-            </div>
-            <img src="/images/bank-payment_(2)_copy_2_copy.jpg" alt="Payment QR code" className="w-24 h-24 rounded-xl bg-white object-contain p-1" />
+        <div className="rounded-2xl border border-brand-500/20 bg-brand-500/5 p-4 animate-fade-in">
+          <div className="text-center mb-3">
+            <p className="text-base font-bold text-white">Scan to pay</p>
+            <p className="text-xs text-ink-400 mt-0.5">Use the QR code, then upload your receipt below.</p>
           </div>
-          <p className="text-xs text-ink-500">Send the amount to your chosen channel. Your wallet updates after admin approval.</p>
+          <div className="flex justify-center my-3">
+            <div className="relative rounded-2xl bg-white p-3 shadow-lg shadow-brand-500/20 transition-transform duration-300 hover:scale-[1.02]">
+              <img
+                src="/images/bank-payment_(2)_copy_2_copy.jpg"
+                alt="Payment QR code"
+                className="w-56 h-56 sm:w-64 sm:h-64 object-contain"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-ink-500 text-center">Send the amount to your chosen channel. Your wallet updates after admin approval.</p>
         </div>
         <div>
           <label className="label">Amount (₱)</label>
