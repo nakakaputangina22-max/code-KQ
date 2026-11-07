@@ -159,11 +159,17 @@ interface ThemeContextValue {
   theme: ThemeKey;
   setTheme: (key: ThemeKey) => void;
   available: ThemeDef[];
+  autoRotate: boolean;
+  setAutoRotate: (on: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const STORAGE_KEY = 'karera-theme';
+const AUTO_KEY = 'karera-theme-auto';
+
+const ROTATE_ORDER: ThemeKey[] = ['midnight', 'ocean', 'emerald', 'sunset', 'crimson', 'royal'];
+const ROTATE_INTERVAL_MS = 60_000;
 
 export function ThemeProvider({ children, initialTheme }: { children: ReactNode; initialTheme?: string }) {
   const [theme, setThemeState] = useState<ThemeKey>(() => {
@@ -171,24 +177,52 @@ export function ThemeProvider({ children, initialTheme }: { children: ReactNode;
     const stored = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY) : null;
     return stored && isValidTheme(stored) ? stored : 'midnight';
   });
+  const [autoRotate, setAutoRotateState] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(AUTO_KEY) === 'true';
+  });
 
-  // When the profile loads (or changes), adopt the account's saved theme.
+  // When the profile loads (or changes), adopt the account's saved theme —
+  // unless auto-rotate is on, in which case we keep cycling.
   useEffect(() => {
+    if (autoRotate) return;
     if (initialTheme && isValidTheme(initialTheme)) setThemeState(initialTheme);
-  }, [initialTheme]);
+  }, [initialTheme, autoRotate]);
 
+  // Apply the current theme's CSS variables to <html> whenever it changes.
   useEffect(() => {
     const def = getTheme(theme);
     const root = document.documentElement;
     Object.entries(def.vars).forEach(([k, v]) => root.style.setProperty(k, v));
     root.setAttribute('data-theme', theme);
-    window.localStorage.setItem(STORAGE_KEY, theme);
-  }, [theme]);
+    if (!autoRotate) window.localStorage.setItem(STORAGE_KEY, theme);
+  }, [theme, autoRotate]);
 
-  const setTheme = (key: ThemeKey) => setThemeState(key);
+  // Auto-rotate: every minute, advance to the next theme in the rotation.
+  useEffect(() => {
+    if (!autoRotate) return;
+    const timer = window.setInterval(() => {
+      setThemeState((prev) => {
+        const idx = ROTATE_ORDER.indexOf(prev);
+        return ROTATE_ORDER[(idx + 1) % ROTATE_ORDER.length];
+      });
+    }, ROTATE_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [autoRotate]);
+
+  const setTheme = (key: ThemeKey) => {
+    setAutoRotateState(false);
+    window.localStorage.setItem(AUTO_KEY, 'false');
+    setThemeState(key);
+  };
+
+  const setAutoRotate = (on: boolean) => {
+    setAutoRotateState(on);
+    window.localStorage.setItem(AUTO_KEY, String(on));
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, available: THEME_LIST }}>
+    <ThemeContext.Provider value={{ theme, setTheme, available: THEME_LIST, autoRotate, setAutoRotate }}>
       {children}
     </ThemeContext.Provider>
   );

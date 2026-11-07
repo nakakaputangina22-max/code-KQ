@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/lib/toast';
 import {
   Loader2, Check, User, Palette, Sparkles, Trophy, Crown, Zap, Shield, Flame,
-  Star, Award, Rocket, Gem,
+  Star, Award, Rocket, Gem, Shuffle,
 } from 'lucide-react';
 
 interface AvatarOption {
@@ -44,7 +44,7 @@ const ICON_AVATARS: IconAvatar[] = [
 
 export function ProfileSettingsPage() {
   const { profile, refreshProfile, user } = useAuth();
-  const { theme, setTheme, available } = useTheme();
+  const { theme, setTheme, available, autoRotate, setAutoRotate } = useTheme();
   const { notify } = useToast();
   const [fullName, setFullName] = useState(profile?.full_name ?? '');
   const [mobile, setMobile] = useState(profile?.mobile ?? '');
@@ -200,6 +200,28 @@ export function ProfileSettingsPage() {
           <Palette className="w-4 h-4 text-[var(--brand-400)]" /> Choose Your Theme
         </div>
         <p className="text-xs text-[var(--text-muted)]">Switch the entire app's color scheme instantly. Your choice is saved to your account.</p>
+
+        {/* Auto-rotate toggle */}
+        <button
+          onClick={() => {
+            const next = !autoRotate;
+            setAutoRotate(next);
+            notify(next ? 'Auto color-rotate is ON — the theme changes every minute.' : 'Auto color-rotate is OFF.', next ? 'success' : 'info');
+          }}
+          className={`w-full flex items-center gap-3 rounded-xl border px-4 py-3 transition-all ${autoRotate ? 'border-[var(--brand-400)] bg-[var(--brand-500)]/10' : 'border-[var(--border-subtle)] hover:border-[var(--brand-400)]/40'}`}
+        >
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${autoRotate ? 'bg-[var(--brand-500)]/20 text-[var(--brand-400)]' : 'bg-ink-800 text-ink-400'}`}>
+            <Shuffle className={`w-5 h-5 ${autoRotate ? 'animate-spin-slow' : ''}`} />
+          </div>
+          <div className="min-w-0 flex-1 text-left">
+            <p className="text-sm font-bold text-[var(--text-primary)]">Auto Color-Rotate</p>
+            <p className="text-[11px] text-[var(--text-muted)]">Automatically changes the theme every minute for a fresh look.</p>
+          </div>
+          <span className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${autoRotate ? 'bg-[var(--brand-500)]' : 'bg-ink-700'}`}>
+            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${autoRotate ? 'translate-x-5' : 'translate-x-0.5'}`} />
+          </span>
+        </button>
+
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {available.map((t) => {
             const selected = theme === t.key;

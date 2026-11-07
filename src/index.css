@@ -159,6 +159,7 @@
   .animate-orb-1 { animation: orbDrift1 18s ease-in-out infinite; }
   .animate-orb-2 { animation: orbDrift2 22s ease-in-out infinite; }
   .animate-orb-3 { animation: orbDrift3 26s ease-in-out infinite; }
+  .animate-spin-slow { animation: spinSlow 6s linear infinite; }
 }
 
 @keyframes splashZoom {
@@ -300,4 +301,9 @@
 @keyframes carryoverShimmer {
   0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
