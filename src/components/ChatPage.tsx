@@ -68,6 +68,12 @@ function UserChat({ profile }: { profile: Profile }) {
     return () => { supabase.removeChannel(channel); };
   }, [profile.id]);
 
+  // Polling fallback — reload every 5s in case realtime drops.
+  useEffect(() => {
+    const id = window.setInterval(() => { load(); }, 5000);
+    return () => window.clearInterval(id);
+  }, [load]);
+
   // Mark admin messages as read when they arrive / on open
   useEffect(() => {
     const unread = messages.filter((m) => m.sender_role === 'admin' && !m.read_at);
@@ -87,14 +93,16 @@ function UserChat({ profile }: { profile: Profile }) {
     if (!body || sending) return;
     if (body.length > MAX_LEN) { notify(`Message too long (max ${MAX_LEN} characters).`, 'error'); return; }
     setSending(true);
-    const { error } = await supabase.from('chat_messages').insert({
+    const { data, error } = await supabase.from('chat_messages').insert({
       user_id: profile.id,
       sender_id: profile.id,
       sender_role: 'user',
       body,
-    });
+    }).select().single();
     setSending(false);
     if (error) { notify('Could not send your message. Please try again.', 'error'); return; }
+    const msg = data as ChatMessage;
+    setMessages((prev) => prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]);
     setText('');
   }
 
@@ -239,6 +247,12 @@ function AdminInbox({ adminProfile }: { adminProfile: Profile }) {
     return () => { supabase.removeChannel(channel); };
   }, [loadSummaries]);
 
+  // Polling fallback for inbox — refresh every 8s.
+  useEffect(() => {
+    const id = window.setInterval(() => { loadSummaries(); }, 8000);
+    return () => window.clearInterval(id);
+  }, [loadSummaries]);
+
   const filtered = conversations.filter((c) =>
     c.full_name.toLowerCase().includes(search.toLowerCase()),
   );
@@ -371,6 +385,12 @@ function AdminConversation({ adminId, userId, onBack }: { adminId: string; userI
     return () => { supabase.removeChannel(channel); };
   }, [userId]);
 
+  // Polling fallback — reload every 5s in case realtime drops.
+  useEffect(() => {
+    const id = window.setInterval(() => { load(); }, 5000);
+    return () => window.clearInterval(id);
+  }, [load]);
+
   // Mark user messages as read
   useEffect(() => {
     const unread = messages.filter((m) => m.sender_role === 'user' && !m.read_at);
@@ -389,14 +409,16 @@ function AdminConversation({ adminId, userId, onBack }: { adminId: string; userI
     if (!body || sending) return;
     if (body.length > MAX_LEN) { notify(`Message too long (max ${MAX_LEN} characters).`, 'error'); return; }
     setSending(true);
-    const { error } = await supabase.from('chat_messages').insert({
+    const { data, error } = await supabase.from('chat_messages').insert({
       user_id: userId,
       sender_id: adminId,
       sender_role: 'admin',
       body,
-    });
+    }).select().single();
     setSending(false);
     if (error) { notify('Could not send your reply.', 'error'); return; }
+    const msg = data as ChatMessage;
+    setMessages((prev) => prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]);
     setText('');
   }
 
