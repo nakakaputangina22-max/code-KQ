@@ -95,12 +95,11 @@ function UserChat({ profile }: { profile: Profile }) {
     setSending(true);
     const { data, error } = await supabase.from('chat_messages').insert({
       user_id: profile.id,
-      sender_id: profile.id,
       sender_role: 'user',
       body,
     }).select().single();
     setSending(false);
-    if (error) { notify('Could not send your message. Please try again.', 'error'); return; }
+    if (error) { console.error('chat insert error:', error); notify('Could not send your message. Please try again.', 'error'); return; }
     const msg = data as ChatMessage;
     setMessages((prev) => prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]);
     setText('');
@@ -411,12 +410,11 @@ function AdminConversation({ adminId, userId, onBack }: { adminId: string; userI
     setSending(true);
     const { data, error } = await supabase.from('chat_messages').insert({
       user_id: userId,
-      sender_id: adminId,
       sender_role: 'admin',
       body,
     }).select().single();
     setSending(false);
-    if (error) { notify('Could not send your reply.', 'error'); return; }
+    if (error) { console.error('chat insert error:', error); notify('Could not send your reply.', 'error'); return; }
     const msg = data as ChatMessage;
     setMessages((prev) => prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]);
     setText('');
