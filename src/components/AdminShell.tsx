@@ -2,7 +2,7 @@ import { type ReactNode, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useRouter } from '@/lib/router';
 import {
-  LayoutDashboard, Radio, Flag, Wallet, LogOut, Menu, X, Shield,
+  LayoutDashboard, Radio, Flag, Wallet, LogOut, Menu, X, Shield, MessageCircle,
 } from 'lucide-react';
 import { AnimatedBackground } from '@/components/AnimatedBackground';
 
@@ -13,6 +13,7 @@ const TABS = [
   { path: '/admin/races', label: 'Races', icon: Radio },
   { path: '/admin/settle', label: 'Settle', icon: Flag },
   { path: '/admin/finance', label: 'Finance', icon: Wallet },
+  { path: '/admin/chat', label: 'Chat', icon: MessageCircle },
   { path: '/admin/rules', label: 'Rules', icon: Shield },
 ];
 
@@ -79,7 +80,7 @@ export function AdminShell({ active, children }: { active: string; children: Rea
 
       <main className="sm:max-w-5xl sm:mx-auto sm:py-6">{children}</main>
 
-      <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 glass border-t border-ink-800 grid grid-cols-5">
+      <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 glass border-t border-ink-800 grid grid-cols-6">
         {TABS.map((t) => {
           const isActive = active === t.path;
           return (

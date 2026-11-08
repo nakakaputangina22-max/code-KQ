@@ -112,3 +112,13 @@ export interface Settings {
   default_race_count: number;
   updated_at: string;
 }
+
+export interface ChatMessage {
+  id: string;
+  user_id: string;
+  sender_id: string;
+  sender_role: 'user' | 'admin';
+  body: string;
+  read_at: string | null;
+  created_at: string;
+}

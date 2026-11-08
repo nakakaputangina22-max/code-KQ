@@ -1,7 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useRouter } from '@/lib/router';
-import { Wallet, Radio, Ticket, LogOut, Menu, X, Shield, Settings, Trophy } from 'lucide-react';
+import { Wallet, Radio, Ticket, LogOut, Menu, X, Shield, Settings, Trophy, MessageCircle } from 'lucide-react';
 import { Money } from '@/components/ui';
 import { AnimatedBackground } from '@/components/AnimatedBackground';
 
@@ -11,6 +11,7 @@ const TABS = [
   { path: '/app', label: 'Races', icon: Radio },
   { path: '/app/bets', label: 'Tickets', icon: Ticket },
   { path: '/app/pools', label: 'Pools', icon: Trophy },
+  { path: '/app/chat', label: 'Chat', icon: MessageCircle },
   { path: '/app/wallet', label: 'Wallet', icon: Wallet },
   { path: '/app/settings', label: 'Settings', icon: Settings },
   { path: '/app/rules', label: 'Rules', icon: Shield },
@@ -105,7 +106,7 @@ export function UserShell({
       <main className="sm:max-w-5xl sm:mx-auto sm:py-6 animate-fade-in">{children}</main>
 
       {/* Mobile bottom nav */}
-      <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 glass border-t border-ink-800 grid grid-cols-6">
+      <nav className="sm:hidden fixed bottom-0 inset-x-0 z-30 glass border-t border-ink-800 grid grid-cols-7">
         {TABS.map((t) => {
           const isActive = active === t.path;
           return (

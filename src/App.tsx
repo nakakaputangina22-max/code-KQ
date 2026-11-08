@@ -14,6 +14,7 @@ import { AdminFinance } from '@/components/AdminFinance';
 import { RulesPage } from '@/components/RulesPage';
 import { ProfileSettingsPage } from '@/components/ProfileSettingsPage';
 import { PoolResults } from '@/components/PoolResults';
+import { ChatPage } from '@/components/ChatPage';
 import { AnimatedBackground } from '@/components/AnimatedBackground';
 import { FullScreenSpinner } from '@/components/ui';
 import { useEffect, useState } from 'react';
@@ -74,6 +75,7 @@ export default function App() {
          path === '/admin/races' ? <AdminRaces /> :
          path === '/admin/settle' ? <AdminSettle /> :
          path === '/admin/finance' ? <AdminFinance /> :
+         path === '/admin/chat' ? <ChatPage /> :
          path === '/admin/rules' ? <RulesPage admin /> :
          <AdminOverview />}
       </AdminShell>
@@ -89,6 +91,7 @@ export default function App() {
        path === '/app/wallet' ? <WalletPage /> :
        path === '/app/bets' ? <BetHistoryPage /> :
        path === '/app/pools' ? <PoolResults /> :
+       path === '/app/chat' ? <ChatPage /> :
        path === '/app/settings' ? <ProfileSettingsPage /> :
        path === '/app/rules' ? <RulesPage /> :
        <UserDashboard />}
