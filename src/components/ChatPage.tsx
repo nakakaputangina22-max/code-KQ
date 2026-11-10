@@ -93,14 +93,16 @@ function UserChat({ profile }: { profile: Profile }) {
     if (!body || sending) return;
     if (body.length > MAX_LEN) { notify(`Message too long (max ${MAX_LEN} characters).`, 'error'); return; }
     setSending(true);
-    const { error } = await supabase.rpc('send_chat_message', {
-      p_user_id: profile.id,
-      p_body: body,
+    const { error } = await supabase.from('chat_messages').insert({
+      user_id: profile.id,
+      sender_id: profile.id,
+      sender_role: 'user',
+      body,
     });
     setSending(false);
     if (error) {
-      console.error('chat send error:', error);
-      notify('Could not send your message. Please try again.', 'error');
+      console.error('chat insert error:', error);
+      notify(error.message || 'Could not send your message.', 'error');
       return;
     }
     setText('');
@@ -410,14 +412,16 @@ function AdminConversation({ adminId, userId, onBack }: { adminId: string; userI
     if (!body || sending) return;
     if (body.length > MAX_LEN) { notify(`Message too long (max ${MAX_LEN} characters).`, 'error'); return; }
     setSending(true);
-    const { error } = await supabase.rpc('send_chat_message', {
-      p_user_id: userId,
-      p_body: body,
+    const { error } = await supabase.from('chat_messages').insert({
+      user_id: userId,
+      sender_id: adminId,
+      sender_role: 'admin',
+      body,
     });
     setSending(false);
     if (error) {
-      console.error('chat send error:', error);
-      notify('Could not send your reply.', 'error');
+      console.error('chat insert error:', error);
+      notify(error.message || 'Could not send your reply.', 'error');
       return;
     }
     setText('');
