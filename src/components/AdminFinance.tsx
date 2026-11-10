@@ -5,9 +5,10 @@ import { Modal } from '@/components/Modal';
 import { Money, Spinner, StatusBadge, EmptyState } from '@/components/ui';
 import {
   Wallet, ArrowDownToLine, ArrowUpFromLine, Check, X, Loader2, Search, Users, SlidersHorizontal, Plus, Minus,
+  QrCode, Upload,
 } from 'lucide-react';
 
-type Tab = 'PENDING' | 'HISTORY' | 'USERS';
+type Tab = 'PENDING' | 'HISTORY' | 'USERS' | 'PAYMENT';
 
 export function AdminFinance() {
   const { notify } = useToast();
@@ -87,8 +88,8 @@ export function AdminFinance() {
       </div>
 
       <div className="flex items-center gap-1.5">
-        <div className="flex gap-1.5 flex-1">
-          {(['PENDING', 'HISTORY', 'USERS'] as Tab[]).map((t) => (
+        <div className="flex gap-1.5 flex-1 flex-wrap">
+          {(['PENDING', 'HISTORY', 'USERS', 'PAYMENT'] as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)} className={`chip px-3 py-1.5 ${tab === t ? 'tab-active' : 'bg-ink-800 text-ink-300'}`}>{t}</button>
           ))}
         </div>
@@ -161,6 +162,8 @@ export function AdminFinance() {
             })
           )}
         </div>
+      ) : tab === 'PAYMENT' ? (
+        <QrCodeTab />
       ) : (
         <UsersTab profiles={profiles} onAdjust={setAdjustTarget} />
       )}
@@ -206,6 +209,107 @@ function UsersTab({ profiles, onAdjust }: { profiles: Profile[]; onAdjust: (p: P
             </div>
           ))
         )}
+      </div>
+    </div>
+  );
+}
+
+function QrCodeTab() {
+  const { notify } = useToast();
+  const [qrUrl, setQrUrl] = useState('/images/bank-payment_(2)_copy_2_copy.jpg');
+  const [busy, setBusy] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const loadQr = useCallback(async () => {
+    const { data } = await supabase.from('settings').select('qr_code_url').eq('id', 1).maybeSingle();
+    if (data?.qr_code_url) setQrUrl(data.qr_code_url);
+  }, []);
+
+  useEffect(() => { loadQr(); }, [loadQr]);
+
+  function onPick(f: File | null) {
+    setFile(f);
+    if (f) {
+      const reader = new FileReader();
+      reader.onload = () => setPreview(reader.result as string);
+      reader.readAsDataURL(f);
+    } else {
+      setPreview(null);
+    }
+  }
+
+  async function upload() {
+    if (!file) { notify('Choose an image first.', 'error'); return; }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      notify('Upload a JPG, PNG, or WebP image up to 5 MB.', 'error');
+      return;
+    }
+    setBusy(true);
+    const ext = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
+    const path = `qr-code.${ext}`;
+    const { error: upErr } = await supabase.storage.from('qr-codes').upload(path, file, {
+      contentType: file.type, upsert: true,
+    });
+    if (upErr) {
+      setBusy(false);
+      notify('Could not upload the QR code. Please try again.', 'error');
+      return;
+    }
+    const { data: pub } = supabase.storage.from('qr-codes').getPublicUrl(path);
+    const publicUrl = pub.publicUrl + `?t=${Date.now()}`;
+    const { error: dbErr } = await supabase.from('settings').update({ qr_code_url: publicUrl }).eq('id', 1);
+    setBusy(false);
+    if (dbErr) { notify('QR uploaded but could not update settings.', 'error'); return; }
+    setQrUrl(publicUrl);
+    setFile(null);
+    setPreview(null);
+    notify('Payment QR code updated successfully.', 'success');
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <QrCode className="w-5 h-5 text-brand-400" />
+          <h2 className="text-sm font-bold text-white uppercase tracking-wide">Payment QR Code</h2>
+        </div>
+        <p className="text-xs text-ink-500 mb-4">
+          This QR code appears in the Cash In screen when users deposit. Upload a new image to change it anytime.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-5 items-center">
+          <div className="rounded-2xl bg-white p-3 shadow-lg shrink-0">
+            <img
+              src={preview ?? qrUrl}
+              alt="Current payment QR"
+              className="w-44 h-44 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).src = '/images/bank-payment_(2)_copy_2_copy.jpg'; }}
+            />
+          </div>
+          <div className="flex-1 w-full space-y-3">
+            <label className="flex items-center gap-3 rounded-xl border border-dashed border-ink-700 bg-ink-900 px-4 py-3 cursor-pointer hover:border-brand-500/60 transition-colors">
+              <Upload className="w-4 h-4 text-brand-400" />
+              <span className="min-w-0 flex-1 text-sm text-ink-300 truncate">
+                {file?.name || 'Choose new QR image'}
+              </span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+              />
+            </label>
+            <p className="text-[11px] text-ink-600">JPG, PNG, or WebP · maximum 5 MB</p>
+            <button
+              onClick={upload}
+              disabled={busy || !file}
+              className="btn-primary w-full py-3"
+            >
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              Save QR Code
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -25,6 +25,12 @@ export function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState('/images/bank-payment_(2)_copy_2_copy.jpg');
+
+  const fetchQrCode = useCallback(async () => {
+    const { data } = await supabase.from('settings').select('qr_code_url').eq('id', 1).maybeSingle();
+    if (data?.qr_code_url) setQrCodeUrl(data.qr_code_url);
+  }, []);
 
   const fetchTxs = useCallback(async () => {
     const { data, error } = await supabase
@@ -37,8 +43,9 @@ export function WalletPage() {
   }, [notify]);
 
   useEffect(() => {
+    fetchQrCode();
     fetchTxs().finally(() => setLoading(false));
-  }, [fetchTxs]);
+  }, [fetchQrCode, fetchTxs]);
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-5">
@@ -96,7 +103,7 @@ export function WalletPage() {
         </div>
       </section>
 
-      <DepositModal open={depositOpen} onClose={() => setDepositOpen(false)} onDone={() => { fetchTxs(); refreshProfile(); }} />
+      <DepositModal open={depositOpen} onClose={() => setDepositOpen(false)} onDone={() => { fetchTxs(); refreshProfile(); }} qrCodeUrl={qrCodeUrl} />
       <WithdrawModal open={withdrawOpen} onClose={() => setWithdrawOpen(false)} onDone={() => { fetchTxs(); refreshProfile(); }} balance={profile?.balance ?? 0} />
     </div>
   );
@@ -148,7 +155,7 @@ function TxRow({ tx }: { tx: Transaction }) {
   );
 }
 
-function DepositModal({ open, onClose, onDone }: { open: boolean; onClose: () => void; onDone: () => void }) {
+function DepositModal({ open, onClose, onDone, qrCodeUrl }: { open: boolean; onClose: () => void; onDone: () => void; qrCodeUrl: string }) {
   const { user } = useAuth();
   const { notify } = useToast();
   const [amount, setAmount] = useState(100);
@@ -207,9 +214,10 @@ function DepositModal({ open, onClose, onDone }: { open: boolean; onClose: () =>
           <div className="flex justify-center my-3">
             <div className="relative rounded-2xl bg-white p-3 shadow-lg shadow-brand-500/20 transition-transform duration-300 hover:scale-[1.02]">
               <img
-                src="/images/bank-payment_(2)_copy_2_copy.jpg"
+                src={qrCodeUrl}
                 alt="Payment QR code"
                 className="w-56 h-56 sm:w-64 sm:h-64 object-contain"
+                onError={(e) => { (e.target as HTMLImageElement).src = '/images/bank-payment_(2)_copy_2_copy.jpg'; }}
               />
             </div>
           </div>
